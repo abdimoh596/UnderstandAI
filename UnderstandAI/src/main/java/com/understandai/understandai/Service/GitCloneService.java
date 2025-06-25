@@ -10,9 +10,8 @@ import java.nio.file.Path;
 @Service
 public class GitCloneService {
 
-    public String cloneRepo(String repoUrl) throws IOException {
+    public Path cloneRepo(String repoUrl) throws IOException {
         Path path = Files.createTempDirectory("repo-clone-");
-        System.out.println("Cloning repository to: " + path.toAbsolutePath());
 
         try {
             Git.cloneRepository()
@@ -21,10 +20,10 @@ public class GitCloneService {
                     .call();
         } catch (GitAPIException e) {
             e.printStackTrace();
-            return "Error cloning repository: " + e.getMessage();
+            return path.resolve("Error cloning repository: " + e.getMessage());
         }
 
-        return path.toString();
+        return path;
     }
 
 }
