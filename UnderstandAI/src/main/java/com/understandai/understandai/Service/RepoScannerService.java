@@ -12,13 +12,13 @@ public class RepoScannerService {
 
     private static final Set<String> EXCLUDED_DIR_NAMES = Set.of(
         ".git", "node_modules", "vendor", "target",
-        "build", ".idea", ".vscode", ".gradle", ".mvn", ".cache", "Temp"
+        "build", ".idea", ".vscode", ".gradle", ".mvn", ".cache"
         );
 
     private static final Set<String> EXCLUDED_EXTENSIONS = Set.of(
         "log", "tmp", "swp", "swo", "bak", "old", "orig", "pyc", "pyo", "class", "exe", "dll", "so", "dylib",
         "jar", "war", "ear", "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "iso", "img", "apk", "ipa",
-        "deb", "rpm", "msi", "cab", "dmg", "pkg", "app", "lock", "pid", "seed", "iml"
+        "deb", "rpm", "msi", "cab", "dmg", "pkg", "app", "lock", "pid", "seed", "iml", "env", "gitignore", "metadata", "png"
     );
 
     public List<FileMetadata> scanRepo(Path repoPath) throws IOException {
@@ -59,6 +59,29 @@ public class RepoScannerService {
             if (EXCLUDED_EXTENSIONS.contains(extension)) {
                 return false;
             }
+        }
+
+        // Use content type to skip images, binaries, compressed files, etc.
+        try {
+            String contentType = Files.probeContentType(path);
+            if (contentType != null) {
+                if (
+                    contentType.startsWith("image/") ||
+                    contentType.startsWith("audio/") ||
+                    contentType.startsWith("video/") ||
+                    contentType.startsWith("text/xml") ||
+                    contentType.equals("application/zip") ||
+                    contentType.equals("application/x-executable") ||
+                    contentType.equals("application/x-dosexec")
+                ) {
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // If we can't determine the content type, we assume it's safe to include
+            // This is a conservative approach to avoid excluding files unnecessarily
+            return true;
         }
 
         return true;
