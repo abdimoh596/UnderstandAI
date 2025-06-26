@@ -6,9 +6,11 @@ import com.understandai.understandai.model.FileMetadata;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.understandai.understandai.Service.ExplanationService;
 
 @RestController
 @RequestMapping("/api")
@@ -16,23 +18,35 @@ public class RepoController {
 
     private GitCloneService gitCloneService;
     private RepoScannerService repoScannerService;
+    private ExplanationService explanationService;
 
-    public RepoController(GitCloneService gitCloneService, RepoScannerService repoScannerService) {
+    public RepoController(GitCloneService gitCloneService, RepoScannerService repoScannerService, 
+                          ExplanationService explanationService) {
         this.gitCloneService = gitCloneService;
         this.repoScannerService = repoScannerService;
+        this.explanationService = explanationService;
     }
 
     @PostMapping("/analyze")
-    public ResponseEntity<String> analyzeRepo(@RequestBody RepoRequest repoRequest) throws IOException {
+    public ResponseEntity<String> explainRepo(@RequestBody RepoRequest repoRequest) throws IOException {
+        
+        String url = repoRequest.getRepoUrl();
+        if (url == null || url.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        String repoName = url.substring(url.lastIndexOf("/") + 1);
+
         Path clonePath = gitCloneService.cloneRepo(repoRequest.getRepoUrl());
 
-        for (FileMetadata fileMetadata : repoScannerService.scanRepo(clonePath)) {
-            System.out.println("File Path: " + fileMetadata.getFilePath());
-            System.out.println("File Type: " + fileMetadata.getFileType());
-            System.out.println("File Size: " + fileMetadata.getFileSize());
-            // print the size of the list of filemetadata objects
-            System.out.println("Total files scanned: " + repoScannerService.scanRepo(clonePath).size());
+        List<FileMetadata> metadataList = repoScannerService.scanRepo(clonePath);
+
+        if (metadataList.isEmpty()) {
+            return ResponseEntity.ok("No files found in the repository.");
         }
-        return ResponseEntity.ok("Repository cloned successfully to: " + clonePath);
+
+        String explanationPrompt = explanationService.getExplanations(metadataList, repoName);
+
+        return ResponseEntity.ok(explanationPrompt);
     }
 }

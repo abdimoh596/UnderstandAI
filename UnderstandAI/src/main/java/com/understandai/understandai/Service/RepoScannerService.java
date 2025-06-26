@@ -28,16 +28,29 @@ public class RepoScannerService {
         Files.walk(repoPath)
                 .filter(Files::isRegularFile)
                 .filter(this::shouldInclude)
+                .filter(file -> file.toFile().length() <= 50 * 1024)
                 .forEach(file -> {
                     FileMetadata metadata = new FileMetadata();
                     metadata.setFilePath(file.toString());
+                    
                     try {
                         metadata.setFileType(Files.probeContentType(file));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                     metadata.setFileSize(file.toFile().length());
-                    fileMetadataList.add(metadata);
+
+                    try {
+                        metadata.setContent(Files.readString(file));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        metadata.setContent("Error");
+                    }
+
+                    if (!metadata.getContent().equals("Error")) {
+                        fileMetadataList.add(metadata);
+                    }
                 });
 
         return fileMetadataList;
