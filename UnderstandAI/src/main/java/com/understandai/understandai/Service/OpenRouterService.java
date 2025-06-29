@@ -54,7 +54,7 @@ public class OpenRouterService {
         messages.put(message);
 
         JSONObject body = new JSONObject();
-        body.put("model", "mistralai/mistral-small-3.2-24b-instruct:free"); // or another OpenRouter-supported model
+        body.put("model", "google/gemma-3n-e4b-it:free"); // or another OpenRouter-supported model
         body.put("messages", messages);
 
         HttpRequest request = HttpRequest.newBuilder()

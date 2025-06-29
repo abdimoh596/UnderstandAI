@@ -45,26 +45,36 @@ public class ExplanationService {
         if (chars > 15000) {
             promptBuilder.append("The content of the files is too long to be processed in one go, so it will be split into parts.\n");
             promptBuilder.append("Please wait to respond until you get all of the parts, there are ").append(totalParts).append(" parts in total.\n");
+            promptBuilder.append("Until you see the following text say 'You can now respond', only reply with 'okay'\n");
+            promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n\n");
         } else {
-            promptBuilder.append("The content of the files is as follows:\n\n");
+            promptBuilder.append("The content of the files is as follows:\n");
+            promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n\n");
         }
 
         explanations.add(promptBuilder.toString());
-
         if (chars > 15000) {
             int parts = 1;
             for (int i = 0; i < chars; i += 15000) {
-                String part = fileStringBuilder.substring(i, Math.min(i + 15000, chars));
+                String part = fileStringBuilder.toString().substring(i, Math.min(i + 15000, chars));
                 explanations.add("Part " + parts + " of " + totalParts + ":\n" + part);
                 parts++;
             }
+        } else {
+            explanations.add(fileStringBuilder.toString());
         }
+        
+        System.out.println(explanations.size());
+        List<String> practiceExplanations = new ArrayList<>();
+        practiceExplanations.add("I want you to do a math question for me, what is 2 + 2?");
+        practiceExplanations.add("What is the answer to the previous question plus 16?");
 
-        List<String> chunkedExplanations = openRouterService.getChunkedExplanations(explanations);
+        List<String> chunkedExplanations = openRouterService.getChunkedExplanations(practiceExplanations);
         // turn the cunked explanations into a single string
         StringBuilder finalExplanationBuilder = new StringBuilder();
         for (String chunk : chunkedExplanations) {
             finalExplanationBuilder.append(chunk).append("\n");
+            finalExplanationBuilder.append("----End of chunk----\n");
         }
 
         return finalExplanationBuilder.toString();
