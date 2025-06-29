@@ -65,18 +65,20 @@ public class ExplanationService {
         }
         
         System.out.println(explanations.size());
-        List<String> practiceExplanations = new ArrayList<>();
-        practiceExplanations.add("I want you to do a math question for me, what is 2 + 2?");
-        practiceExplanations.add("What is the answer to the previous question plus 16?");
 
-        List<String> chunkedExplanations = openRouterService.getChunkedExplanations(practiceExplanations);
-        // turn the cunked explanations into a single string
-        StringBuilder finalExplanationBuilder = new StringBuilder();
-        for (String chunk : chunkedExplanations) {
-            finalExplanationBuilder.append(chunk).append("\n");
-            finalExplanationBuilder.append("----End of chunk----\n");
+        String chunkedExplanations = null;
+        try {
+            chunkedExplanations = openRouterService.getChunkedExplanations(explanations);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        // turn the cunked explanations into a single string
+        // StringBuilder finalExplanationBuilder = new StringBuilder();
+        // for (String chunk : chunkedExplanations) {
+        //     finalExplanationBuilder.append(chunk).append("\n");
+        //     finalExplanationBuilder.append("----End of chunk----\n");
+        // }
 
-        return finalExplanationBuilder.toString();
+        return chunkedExplanations;
     }
 }

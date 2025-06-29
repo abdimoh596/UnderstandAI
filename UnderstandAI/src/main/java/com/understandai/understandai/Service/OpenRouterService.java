@@ -3,7 +3,6 @@ package com.understandai.understandai.Service;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -25,36 +24,21 @@ public class OpenRouterService {
         this.httpClient = HttpClient.newHttpClient();
     }
 
-     public List<String> getChunkedExplanations(List<String> promptChunks) {
-        List<String> responses = new ArrayList<>();
-
-        for (String chunk : promptChunks) {
-            try {
-                String response = sendPromptChunk(chunk);
-                responses.add(response);
-                // Optional: delay slightly between calls to avoid rate limits
-                Thread.sleep(2000); 
-            } catch (Exception e) {
-                e.printStackTrace();
-                responses.add("Error in chunk: " + e.getMessage());
-            }
-        }
-
-        return responses;
-    }
-
-    private String sendPromptChunk(String promptChunk) throws Exception {
+     public String getChunkedExplanations(List<String> promptChunks) throws Exception {
         URI uri = URI.create("https://openrouter.ai/api/v1/chat/completions");
 
-        JSONObject message = new JSONObject();
-        message.put("role", "user");
-        message.put("content", promptChunk);
-
         JSONArray messages = new JSONArray();
-        messages.put(message);
+
+        // Add each prompt chunk as its own message
+        for (int i = 0; i < promptChunks.size(); i++) {
+            JSONObject userMsg = new JSONObject();
+            userMsg.put("role", "user");
+            userMsg.put("content", promptChunks.get(i));
+            messages.put(userMsg);
+        }
 
         JSONObject body = new JSONObject();
-        body.put("model", "google/gemma-3n-e4b-it:free"); // or another OpenRouter-supported model
+        body.put("model", "deepseek/deepseek-r1-0528-qwen3-8b:free"); // or another OpenRouter-supported model
         body.put("messages", messages);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -70,4 +54,5 @@ public class OpenRouterService {
         JSONArray choices = json.getJSONArray("choices");
         return choices.getJSONObject(0).getJSONObject("message").getString("content");
     }
+
 }
