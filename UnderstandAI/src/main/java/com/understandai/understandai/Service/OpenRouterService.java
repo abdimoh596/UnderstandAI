@@ -41,6 +41,12 @@ public class OpenRouterService {
         body.put("model", "deepseek/deepseek-r1-0528-qwen3-8b:free"); // or another OpenRouter-supported model
         body.put("messages", messages);
 
+        String payloadStr = body.toString();
+        int charLimit = 500_000;  // Safe threshold for context
+        if (payloadStr.length() > charLimit) {
+            body.put("transforms", new JSONArray().put("middle-out"));
+        }
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
                 .header("Authorization", "Bearer " + openRouterKey)
@@ -50,9 +56,24 @@ public class OpenRouterService {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-        JSONObject json = new JSONObject(response.body());
-        System.out.println("API raw response: " + json.toString(2));
-        JSONArray choices = json.getJSONArray("choices");
+        JSONObject jsonResponse = new JSONObject(response.body());
+
+        if (jsonResponse.has("error")) {
+            JSONObject error = jsonResponse.getJSONObject("error");
+            int errorCode = error.optInt("code");
+            String message = error.optString("message");
+
+            System.out.println("OpenRouter API Error " + errorCode + ": " + message);
+            throw new RuntimeException("OpenRouter API Error " + errorCode + ": " + message);
+        }
+
+        if (!jsonResponse.has("choices")) {
+            System.out.println("Unexpected response format: " + response.body());
+            throw new RuntimeException("Missing 'choices' in OpenRouter response");
+        }
+
+        JSONArray choices = jsonResponse.getJSONArray("choices");
+
         return choices.getJSONObject(0).getJSONObject("message").getString("content");
     }
 

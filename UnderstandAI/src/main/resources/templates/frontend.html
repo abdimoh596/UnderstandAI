@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -48,15 +48,15 @@
         }
 
         .auth-button:hover {
-            background: #1b1f23;
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
         }
 
         .auth-button.authenticated {
-            background: #28a745;
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
         }
 
         .auth-button.authenticated:hover {
-            background: #218838;
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
         }
 
         .header {
@@ -68,7 +68,7 @@
             color: #333;
             font-size: 2.5rem;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -109,7 +109,7 @@
         .submit-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -236,7 +236,7 @@
         .view-repos-btn {
             display: inline-block;
             padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -268,6 +268,10 @@
         .my-repos-btn:hover {
             background: #1b1f23;
         }
+
+        .my-repos-btn.authenticated {
+            background: linear-gradient(135deg, #ac66ea 0%, #7200ac 100%);
+        }
     </style>
 </head>
 <body>
@@ -281,8 +285,11 @@
         </div>
 
         <!-- My Repos Button (shown when authenticated) -->
-        <div>
+        <div th:if="${!isAuthenticated}">
             <a href="/repos" class="my-repos-btn">My Repos</a>
+        </div>
+        <div th:if="${isAuthenticated}">
+            <a href="/repos" class="my-repos-btn authenticated">My Repos</a>
         </div>
 
         <div class="header">
