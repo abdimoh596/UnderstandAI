@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.understandai.understandai.Service.ExplanationService;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api")
@@ -28,7 +29,7 @@ public class RepoController {
     }
 
     @PostMapping("/analyze")
-    public ResponseEntity<String> explainRepo(@RequestBody RepoRequest repoRequest) throws IOException {
+    public ResponseEntity<String> explainRepo(@RequestBody RepoRequest repoRequest, HttpSession session) throws IOException {
         
         String url = repoRequest.getRepoUrl();
         if (url == null || url.isEmpty()) {
@@ -37,7 +38,10 @@ public class RepoController {
 
         String repoName = url.substring(url.lastIndexOf("/") + 1);
 
-        Path clonePath = gitCloneService.cloneRepo(repoRequest.getRepoUrl());
+        // Get token from session if available
+        String token = (String) session.getAttribute("GITHUB_TOKEN");
+
+        Path clonePath = gitCloneService.cloneRepo(repoRequest.getRepoUrl(), token);
 
         List<FileMetadata> metadataList = repoScannerService.scanRepo(clonePath);
 

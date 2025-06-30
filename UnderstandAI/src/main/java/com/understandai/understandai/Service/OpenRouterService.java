@@ -51,6 +51,7 @@ public class OpenRouterService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         JSONObject json = new JSONObject(response.body());
+        System.out.println("API raw response: " + json.toString(2));
         JSONArray choices = json.getJSONArray("choices");
         return choices.getJSONObject(0).getJSONObject("message").getString("content");
     }

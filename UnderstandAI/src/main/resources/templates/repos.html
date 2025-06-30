@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your GitHub Repositories - UnderstandAI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .repos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .repo-card {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .repo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .repo-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .repo-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+
+        .repo-url {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+
+        .repo-url:hover {
+            text-decoration: underline;
+        }
+
+        .analyze-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analyze-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .analyze-btn:hover::before {
+            left: 100%;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .no-repos {
+            text-align: center;
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 60px;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 60px;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .repo-count {
+            text-align: center;
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .repos-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your GitHub Repositories</h1>
+            <p>Select a repository to analyze with UnderstandAI</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/" class="back-btn">← Back to Home</a>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+
+        <div class="repo-count" th:if="${repos != null and !repos.empty}">
+            <span th:text="${repos.size()}"></span> repositories found
+        </div>
+
+        <div class="repos-grid" id="reposGrid">
+            <div th:if="${repos != null and !repos.empty}">
+                <div th:each="repo : ${repos}" class="repo-card" th:data-repo="${repo}">
+                    <div class="repo-name" th:text="${repo}"></div>
+                    <a th:href="'https://github.com/' + ${repo}" class="repo-url" target="_blank" th:text="'https://github.com/' + ${repo}"></a>
+                    <button class="analyze-btn">Analyze Repository</button>
+                </div>
+            </div>
+            <div th:if="${repos == null or repos.empty}" class="no-repos">
+                <p>No repositories found or loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click event listeners to all repo cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const repoCards = document.querySelectorAll('.repo-card');
+            
+            repoCards.forEach(function(card) {
+                card.addEventListener('click', function() {
+                    const repoName = this.getAttribute('data-repo');
+                    if (repoName) {
+                        analyzeRepo(repoName);
+                    }
+                });
+            });
+        });
+
+        function analyzeRepo(repoName) {
+            const repoUrl = `https://github.com/${repoName}`;
+            // Redirect to the main page with the repo URL pre-filled
+            window.location.href = `/?repo=${encodeURIComponent(repoUrl)}`;
+        }
+    </script>
+</body>
+</html> 

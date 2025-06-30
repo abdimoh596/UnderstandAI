@@ -1,5 +1,9 @@
 package com.understandai.understandai.Service;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -30,6 +34,9 @@ public class RepoScannerService {
                 .filter(this::shouldInclude)
                 .filter(file -> file.toFile().length() <= 50 * 1024)
                 .forEach(file -> {
+                    if (!isUtf8(file)) {
+                        return; // Skip non-UTF-8 files
+                    }
                     FileMetadata metadata = new FileMetadata();
                     metadata.setFilePath(file.toString());
                     
@@ -45,6 +52,7 @@ public class RepoScannerService {
                         metadata.setContent(Files.readString(file));
                     } catch (IOException e) {
                         e.printStackTrace();
+                        System.out.println("SOMETHING WENT WRONG HERE");
                         metadata.setContent("Error");
                     }
 
@@ -98,6 +106,18 @@ public class RepoScannerService {
         }
 
         return true;
+    }
+
+    private boolean isUtf8(Path path) {
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
+            decoder.onMalformedInput(CodingErrorAction.REPORT);
+            decoder.decode(ByteBuffer.wrap(bytes));
+            return true; // Decoding succeeded
+        } catch (IOException e) {
+            return false; // Not UTF-8 or unreadable
+        }
     }
 
 }

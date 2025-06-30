@@ -63,22 +63,14 @@ public class ExplanationService {
         } else {
             explanations.add(fileStringBuilder.toString());
         }
-        
-        System.out.println(explanations.size());
 
-        String chunkedExplanations = null;
+        String aiExplanations = null;
         try {
-            chunkedExplanations = openRouterService.getChunkedExplanations(explanations);
+            aiExplanations = openRouterService.getChunkedExplanations(explanations);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // turn the cunked explanations into a single string
-        // StringBuilder finalExplanationBuilder = new StringBuilder();
-        // for (String chunk : chunkedExplanations) {
-        //     finalExplanationBuilder.append(chunk).append("\n");
-        //     finalExplanationBuilder.append("----End of chunk----\n");
-        // }
 
-        return chunkedExplanations;
+        return aiExplanations;
     }
 }
