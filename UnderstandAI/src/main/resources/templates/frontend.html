@@ -102,7 +102,7 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #ac66ea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
@@ -317,6 +317,13 @@
                     <label><input type="radio" name="explanationLevel" value="advanced"> Advanced</label>
                 </div>
             </div>
+            <div class="form-group">
+                <label>Analysis Output:</label>
+                <div style="display: flex; gap: 20px;">
+                    <label><input type="radio" name="analysisOutput" value="plaintext" checked> Plain Text</label>
+                    <label><input type="radio" name="analysisOutput" value="presentation"> Presentation</label>
+                </div>
+            </div>
             <button type="submit" class="submit-btn" id="submitBtn">
                 Analyze Repository
             </button>
@@ -383,7 +390,7 @@
 
         function showResult(data) {
             result.style.display = 'block';
-            resultContent.textContent = data;
+            resultContent.innerHTML = data.replace(/\n/g, '<br>');
             error.style.display = 'none';
         }
 
@@ -392,7 +399,7 @@
             
             const repoUrl = document.getElementById('repoUrl').value.trim();
             const explanationLevel = document.querySelector('input[name="explanationLevel"]:checked').value;
-            
+            const analysisOutput = document.querySelector('input[name="analysisOutput"]:checked').value;            
             if (!repoUrl) {
                 showError('Please enter a GitHub repository URL');
                 return;
@@ -413,7 +420,8 @@
                     },
                     body: JSON.stringify({
                         repoUrl: repoUrl,
-                        explanationLevel: explanationLevel
+                        explanationLevel: explanationLevel,
+                        analysisOutput: analysisOutput
                     })
                 });
 

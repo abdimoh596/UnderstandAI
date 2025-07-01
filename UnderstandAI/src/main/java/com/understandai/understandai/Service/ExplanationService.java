@@ -15,7 +15,7 @@ public class ExplanationService {
         this.openRouterService = openRouterService;
     }
 
-    public String getExplanations(List<FileMetadata> metadataList, String repoName, String explanationLevel) {
+    public String getExplanations(List<FileMetadata> metadataList, String repoName, String explanationLevel, String analysisOutput) {
 
         List<String> explanations = new ArrayList<>();
 
@@ -33,14 +33,7 @@ public class ExplanationService {
         int chars = fileStringBuilder.length();
         int totalParts = (chars / 15000) + 1;
 
-        promptBuilder.append("You are an expert in code analysis and explanation. \n");
-        promptBuilder.append("You will be given a list of files with their metadata, including file path, type, size, and content. \n");
-        promptBuilder.append("I have parsed through the repo and excluded files which i believe are not important in describing functionality \n");
-        promptBuilder.append("Your task is to provide a detailed explanation of the code in the repository, including its purpose, functionality, and  \n");
-        promptBuilder.append("You will also provide a summary of the overall codebase, highlighting the main components, their interactions, and any notable patterns or practices. \n");
-        promptBuilder.append("You can skip any files which you see to be unimportant which i was unable to exclude. \n");
-        promptBuilder.append("Please provide an organized and structured response, using headings and bullet points where appropriate. \n");
-        promptBuilder.append("The name of the repo you are analyzing is: " + repoName + "\n");
+        promptBuilder.append(defaultPrompt(repoName));
 
         promptBuilder.append(explanationLevelPrompt(explanationLevel));
 
@@ -52,8 +45,12 @@ public class ExplanationService {
             promptBuilder.append("The content of the files is as follows:\n");
         }
 
-        promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n");
-        promptBuilder.append("And at any point in your response, do not ask the user to give follow ups. Your message is final.\n\n");
+        if (analysisOutput.equalsIgnoreCase("presentation")) {
+            promptBuilder.append(presentationModePrompt());
+        } else {
+            promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n");
+            promptBuilder.append("And at any point in your response, do not ask the user to give follow ups. Your message is final.\n\n");
+        }
 
         explanations.add(promptBuilder.toString());
         if (chars > 15000) {
@@ -67,6 +64,8 @@ public class ExplanationService {
             explanations.add(fileStringBuilder.toString());
         }
 
+        System.out.println(explanations.get(0));
+
         String aiExplanations = null;
         try {
             aiExplanations = openRouterService.getChunkedExplanations(explanations);
@@ -75,6 +74,20 @@ public class ExplanationService {
         }
 
         return aiExplanations;
+    }
+
+    private String defaultPrompt(String repoName) {
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("You are an expert in code analysis and explanation. \n");
+        promptBuilder.append("You will be given a list of files with their metadata, including file path, type, size, and content. \n");
+        promptBuilder.append("I have parsed through the repo and excluded files which i believe are not important in describing functionality \n");
+        promptBuilder.append("Your task is to provide a detailed explanation of the code in the repository, including its purpose, functionality, and  \n");
+        promptBuilder.append("You will also provide a summary of the overall codebase, highlighting the main components, their interactions, and any notable patterns or practices. \n");
+        promptBuilder.append("You can skip any files which you see to be unimportant which i was unable to exclude. \n");
+        promptBuilder.append("Please provide an organized and structured response, using headings and bullet points where appropriate. \n");
+        promptBuilder.append("The name of the repo you are analyzing is: " + repoName + "\n");
+
+        return promptBuilder.toString();
     }
 
     private String explanationLevelPrompt(String level) {
@@ -96,5 +109,18 @@ public class ExplanationService {
             default:
                 return "\n";
         }
+    }
+
+    private String presentationModePrompt() {
+        return "The user has requested a powerpoint presentation for their github repo. " +
+        "I will be using apache poi to create a powerpoint presentation based on your analysis " +
+        "of the codebase. Please provide your analysis strictly in the following format. " +
+        "There should be exactly 7 slides in the presentation, and each slide should be structured as follows:\n" +
+        "1. Title Slide: Title of the presentation, Subtitle with repo name.\n" +
+        "2. Overview Slide: Brief overview of the codebase, its purpose, and main components.\n" +
+        "3-7. Detailed Slides: Each slide should cover a specific aspect of the codebase, such as architecture, " +
+        "key components, design patterns, performance considerations, and/or any notable features or practices. " +
+        "It doesnt have to be those exact things, but just create these slides in a way that they make sense. " +
+        "I will be parsing through your response to create the powerpoint so at the start of each slide part type 'slide (slide number)'\n";
     }
 }

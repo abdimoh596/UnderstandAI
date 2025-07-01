@@ -41,6 +41,11 @@ public class RepoController {
             return ResponseEntity.badRequest().body("Explanation level is required.");
         }
         
+        String analysisOutput = repoRequest.getAnalysisOutput();
+        if (analysisOutput == null || analysisOutput.isEmpty()) {
+            return ResponseEntity.badRequest().body("Analysis output type is required.");
+        }
+
         String repoName = url.substring(url.lastIndexOf("/") + 1);
 
         // Get token from session if available
@@ -54,7 +59,7 @@ public class RepoController {
             return ResponseEntity.ok("No files found in the repository.");
         }
 
-        String explanationPrompt = explanationService.getExplanations(metadataList, repoName, level);
+        String explanationPrompt = explanationService.getExplanations(metadataList, repoName, level, analysisOutput);
 
         return ResponseEntity.ok(explanationPrompt);
     }
