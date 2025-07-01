@@ -15,7 +15,7 @@ public class ExplanationService {
         this.openRouterService = openRouterService;
     }
 
-    public String getExplanations(List<FileMetadata> metadataList, String repoName) {
+    public String getExplanations(List<FileMetadata> metadataList, String repoName, String explanationLevel) {
 
         List<String> explanations = new ArrayList<>();
 
@@ -42,15 +42,18 @@ public class ExplanationService {
         promptBuilder.append("Please provide an organized and structured response, using headings and bullet points where appropriate. \n");
         promptBuilder.append("The name of the repo you are analyzing is: " + repoName + "\n");
 
+        promptBuilder.append(explanationLevelPrompt(explanationLevel));
+
         if (chars > 15000) {
             promptBuilder.append("The content of the files is too long to be processed in one go, so it will be split into parts.\n");
             promptBuilder.append("Please wait to respond until you get all of the parts, there are ").append(totalParts).append(" parts in total.\n");
             promptBuilder.append("Until you see the following text say 'You can now respond', only reply with 'okay'\n");
-            promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n\n");
         } else {
             promptBuilder.append("The content of the files is as follows:\n");
-            promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n\n");
         }
+
+        promptBuilder.append("And when you respond, please start whatever you are going to say with '----(name of the repo)----'\n");
+        promptBuilder.append("And at any point in your response, do not ask the user to give follow ups. Your message is final.\n\n");
 
         explanations.add(promptBuilder.toString());
         if (chars > 15000) {
@@ -72,5 +75,26 @@ public class ExplanationService {
         }
 
         return aiExplanations;
+    }
+
+    private String explanationLevelPrompt(String level) {
+        switch (level.toLowerCase()) {
+            case "basic":
+                return "The user has requested that you please provide your answer at a basic level explanation " +
+                 "so along with previous instructions please explain this codebase to a complete beginner. Use plain language, no technical jargon, and analogies. " +
+                 "Similar to explaining it to a non technical person.\n";
+
+            case "intermediate":
+                return "The user has requested that you please provide your answer at an intermediate level explanation " + 
+                "so along with previous instructions please explain the code clearly to someone with basic programming experience. " +
+                "Use simple technical language. Similar to explaining it to a college student or someone with some coding knowledge.\n";
+
+            case "advanced":
+                return "The user has requested that you please provide your answer at an advanced level explanation " +
+                "so along with previous instructions please give a deep technical analysis of the code, including architecture," +
+                " performance implications, and design patterns. Similar to explaining it to a senior developer or software architect.\n";
+            default:
+                return "\n";
+        }
     }
 }

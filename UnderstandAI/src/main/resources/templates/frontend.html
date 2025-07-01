@@ -309,6 +309,14 @@
                     required
                 >
             </div>
+            <div class="form-group">
+                <label>Explanation Level:</label>
+                <div style="display: flex; gap: 20px;">
+                    <label><input type="radio" name="explanationLevel" value="basic" checked> Basic</label>
+                    <label><input type="radio" name="explanationLevel" value="intermediate"> Intermediate</label>
+                    <label><input type="radio" name="explanationLevel" value="advanced"> Advanced</label>
+                </div>
+            </div>
             <button type="submit" class="submit-btn" id="submitBtn">
                 Analyze Repository
             </button>
@@ -333,15 +341,7 @@
         </div>
 
         <!-- Example Repositories Section (shown when not authenticated) -->
-        <div class="example-urls" id="exampleUrls" th:if="${!isAuthenticated}">
-            <h4>Example repositories to try:</h4>
-            <ul>
-                <li><a href="#" onclick="setUrl('https://github.com/spring-projects/spring-boot')">Spring Boot</a></li>
-                <li><a href="#" onclick="setUrl('https://github.com/facebook/react')">React</a></li>
-                <li><a href="#" onclick="setUrl('https://github.com/microsoft/vscode')">VS Code</a></li>
-                <li><a href="#" onclick="setUrl('https://github.com/tensorflow/tensorflow')">TensorFlow</a></li>
-            </ul>
-        </div>
+        <div class="example-urls" id="exampleUrls" style="display:none;"></div>
     </div>
 
     <script>
@@ -391,6 +391,7 @@
             e.preventDefault();
             
             const repoUrl = document.getElementById('repoUrl').value.trim();
+            const explanationLevel = document.querySelector('input[name="explanationLevel"]:checked').value;
             
             if (!repoUrl) {
                 showError('Please enter a GitHub repository URL');
@@ -411,7 +412,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        repoUrl: repoUrl
+                        repoUrl: repoUrl,
+                        explanationLevel: explanationLevel
                     })
                 });
 
