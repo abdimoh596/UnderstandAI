@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import java.net.http.HttpRequest;
 import org.springframework.stereotype.Service;
 
-import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
 public class OpenRouterService {
@@ -19,8 +18,10 @@ public class OpenRouterService {
     private final HttpClient httpClient;
 
     public OpenRouterService() {
-        Dotenv dotenv = Dotenv.load();
-        this.openRouterKey = dotenv.get("OPENROUTERKEY");
+        openRouterKey = System.getenv("OPENROUTER_API_KEY");
+        if (openRouterKey == null || openRouterKey.isEmpty()) {
+            throw new RuntimeException("OPENROUTER_API_KEY environment variable is not set");
+        }
         this.httpClient = HttpClient.newHttpClient();
     }
 

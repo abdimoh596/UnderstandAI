@@ -18,18 +18,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class GitHubController {
     
-    Dotenv dotenv = Dotenv.load();
 
-    private String clientId = dotenv.get("GITHUBID");
-
-    private String clientSecret = dotenv.get("GITHUBSECRET");
+    private final String clientId = System.getenv("GITHUBID");
+    private final String clientSecret = System.getenv("GITHUBSECRET");
 
     private final String redirectUri = "http://localhost:8080/callback";
 
