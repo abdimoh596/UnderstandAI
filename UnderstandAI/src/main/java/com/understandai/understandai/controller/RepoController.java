@@ -3,10 +3,13 @@ import com.understandai.understandai.Service.GitCloneService;
 import com.understandai.understandai.Service.RepoScannerService;
 import com.understandai.understandai.dto.RepoRequest;
 import com.understandai.understandai.model.FileMetadata;
+import com.understandai.understandai.model.PowerpointSlide;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -65,12 +68,30 @@ public class RepoController {
         String aiResponse = explanationService.getExplanations(metadataList, repoName, level, analysisOutput);
 
         if ("presentation".equalsIgnoreCase(analysisOutput)) {
-            byte[] pptxBytes = powerpointService.createPresentationFromAnalysis(aiResponse);
-            return ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment; filename=\"repo_analysis.pptx\"")
-                    .body(pptxBytes);
+            // Parse slides for preview
+            List<PowerpointSlide> slides = powerpointService.parseSlides(aiResponse);
+            Map<String, Object> response = new HashMap<>();
+            response.put("type", "presentation");
+            response.put("slides", slides);
+            response.put("aiResponse", aiResponse);
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.ok(aiResponse); // plain text
+            Map<String, Object> response = new HashMap<>();
+            response.put("type", "plaintext");
+            response.put("content", aiResponse);
+            return ResponseEntity.ok(response);
         }
+    }
+
+    @PostMapping("/download-pptx")
+    public ResponseEntity<?> downloadPptx(@RequestBody Map<String, String> body) throws IOException {
+        String aiResponse = body.get("aiResponse");
+        if (aiResponse == null || aiResponse.isEmpty()) {
+            return ResponseEntity.badRequest().body("AI response is required to generate PowerPoint.");
+        }
+        byte[] pptxBytes = powerpointService.createPresentationFromAnalysis(aiResponse);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=repo_analysis.pptx")
+                .body(pptxBytes);
     }
 }

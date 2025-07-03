@@ -18,7 +18,7 @@ public class PowerpointService {
         return createPowerpoint(slideContents);
     }
 
-    public static List<PowerpointSlide> parseSlides(String aiResponse) {
+    public List<PowerpointSlide> parseSlides(String aiResponse) {
         List<PowerpointSlide> slides = new ArrayList<>();
 
         String[] slideParts = aiResponse.split("\\n\\n");

@@ -308,6 +308,8 @@
         <div class="result" id="result">
             <h3>Analysis Result:</h3>
             <div class="result-content" id="resultContent"></div>
+            <div id="pptxDownloadContainer" style="margin-top: 20px;"></div>
+            <div id="copyBtnContainer" style="margin-top: 20px;"></div>
         </div>
 
         <!-- User Repositories Section (shown when authenticated) -->
@@ -355,8 +357,85 @@
 
         function showResult(data) {
             result.style.display = 'block';
-            resultContent.innerHTML = data.replace(/\n/g, '<br>');
+            resultContent.innerHTML = '';
+            document.getElementById('pptxDownloadContainer').innerHTML = '';
+            document.getElementById('copyBtnContainer').innerHTML = '';
             error.style.display = 'none';
+
+            if (typeof data === 'string') {
+                // fallback for plain text
+                resultContent.innerHTML = data.replace(/\n/g, '<br>');
+                return;
+            }
+
+            if (data.type === 'plaintext') {
+                resultContent.innerHTML = data.content.replace(/\n/g, '<br>');
+                // Add copy button
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = 'Copy';
+                copyBtn.className = 'submit-btn';
+                copyBtn.onclick = function() {
+                    copyPlainText(data.content);
+                };
+                document.getElementById('copyBtnContainer').appendChild(copyBtn);
+            } else if (data.type === 'presentation') {
+                // Render slide previews
+                resultContent.innerHTML = renderSlides(data.slides);
+                // Add download button
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = 'Download PowerPoint';
+                downloadBtn.className = 'submit-btn';
+                downloadBtn.onclick = function() {
+                    downloadPptx(data.aiResponse);
+                };
+                document.getElementById('pptxDownloadContainer').appendChild(downloadBtn);
+            }
+        }
+
+        function renderSlides(slides) {
+            if (!slides || slides.length === 0) return '<em>No slides to preview.</em>';
+            let html = '';
+            slides.forEach((slide, idx) => {
+                html += `<div style="margin-bottom: 18px; padding: 16px; border-radius: 10px; background: #f3eaff; border-left: 4px solid #ac66ea;">
+                    <strong>Slide ${idx + 1}:</strong><br>`;
+                if (slide.title) html += `<b>Title:</b> ${slide.title}<br>`;
+                if (slide.subtitle) html += `<b>Subtitle:</b> ${slide.subtitle}<br>`;
+                if (slide.content) html += `<b>Content:</b> ${slide.content.replace(/\n/g, '<br>')}<br>`;
+                html += `</div>`;
+            });
+            return html;
+        }
+
+        async function downloadPptx(aiResponse) {
+            try {
+                const response = await fetch('/api/download-pptx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aiResponse })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to generate PowerPoint.');
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'repo_analysis.pptx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                showError('Failed to download PowerPoint.');
+            }
+        }
+
+        function copyPlainText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }, () => {
+                alert('Failed to copy.');
+            });
         }
 
         form.addEventListener('submit', async (e) => {
@@ -394,7 +473,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const data = await response.text();
+                const data = await response.json();
                 showResult(data);
             } catch (err) {
                 console.error('Error:', err);
