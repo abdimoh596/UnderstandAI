@@ -28,7 +28,7 @@ public class GitHubController {
     private final String clientId = System.getenv("GITHUBID");
     private final String clientSecret = System.getenv("GITHUBSECRET");
 
-    private final String redirectUri = "http://localhost:8080/callback";
+    private final String redirectUri = "https://understandai.onrender.com/login/oauth2/code/github";
 
     @GetMapping("/login/github")
     public void githubLogin(HttpServletResponse response) throws IOException {
