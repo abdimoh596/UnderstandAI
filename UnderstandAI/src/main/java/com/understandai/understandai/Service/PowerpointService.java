@@ -1,5 +1,6 @@
 package com.understandai.understandai.Service;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,17 +22,38 @@ public class PowerpointService {
         List<PowerpointSlide> slides = new ArrayList<>();
 
         String[] slideParts = aiResponse.split("\\n\\n");
+        List<String> slidePartsList = new ArrayList<>();
 
         for (String part : slideParts) {
-            if (!part.contains("Slide ")) {
-                continue;
-            }
-            String title = extractLine(part, "Title:");
-            String subtitle = extractLine(part, "Subtitle:");
-            String content = extractLine(part, "Content:");
+            slidePartsList.add(part.trim());
+        }
 
-            PowerpointSlide slide = new PowerpointSlide(title, content, subtitle);
-            slides.add(slide);
+        for (int i = 0; i < slidePartsList.size(); i++) {
+            String part = slidePartsList.get(i);
+            if (part.isEmpty()) {
+                slidePartsList.remove(i);
+            }
+        }
+
+
+        for (String part : slidePartsList) {
+            String title = "";
+            String subtitle = "";
+            String content = "";
+
+            if (part.contains("Title:")) {
+                title = extractLine(part, "Title:");
+            }
+            if (part.contains("Subtitle:")) {
+                subtitle = extractLine(part, "Subtitle:");
+            }
+            if (part.contains("Content:")) {
+                content = extractLine(part, "Content:");
+            }
+            if (!title.isEmpty()) {
+                PowerpointSlide slide = new PowerpointSlide(title, content, subtitle);
+                slides.add(slide);
+            }
         }
 
         return slides;
@@ -47,6 +69,7 @@ public class PowerpointService {
         for (int i = 0; i < slides.size(); i++) {
             PowerpointSlide slideData = slides.get(i);
             XSLFSlide slide = ppt.createSlide(layout);
+            slide.getBackground().setFillColor(new Color(172, 102, 234)); // White background
 
             XSLFTextShape titleShape = slide.getPlaceholder(0);
             if (slideData.getTitle() != null) {
@@ -62,8 +85,8 @@ public class PowerpointService {
                 XSLFTextParagraph para = contentShape.addNewTextParagraph();
                 XSLFTextRun run = para.addNewTextRun();
                 run.setText(slideData.getSubtitle());
-                run.setFontSize(20.0);
-                run.setFontColor(new java.awt.Color(0, 102, 204)); // Blue color for subtitle
+                run.setFontSize(36.0);
+                run.setFontColor(Color.BLACK); // Black
             } else if (slideData.getContent() != null) {
                 // Split content into bullet points if it's long
                 String[] bulletPoints = slideData.getContent().split("\\.\\s+");
@@ -72,7 +95,7 @@ public class PowerpointService {
                     para.setBullet(true);
                     XSLFTextRun run = para.addNewTextRun();
                     run.setText(point.trim() + ".");
-                    run.setFontSize(18.0);
+                    run.setFontSize(24.0);
                 }
             }
         }
@@ -86,6 +109,14 @@ public class PowerpointService {
     }
 
     private static String extractLine(String part, String key) {
+        if (key.equals("Content:")) {
+            // For content, we want everything after the key
+            int startIndex = part.indexOf(key);
+            if (startIndex != -1) {
+                return part.substring(startIndex + key.length()).trim();
+            }
+            return "";
+        }
         for (String line : part.split("\n")) {
             if (line.trim().startsWith(key)) {
                 return line.replaceFirst(key, "").trim();
