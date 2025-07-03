@@ -64,7 +64,6 @@ public class ExplanationService {
             explanations.add(fileStringBuilder.toString());
         }
 
-        System.out.println(explanations.get(0));
 
         String aiExplanations = null;
         try {
@@ -112,15 +111,48 @@ public class ExplanationService {
     }
 
     private String presentationModePrompt() {
-        return "The user has requested a powerpoint presentation for their github repo. " +
-        "I will be using apache poi to create a powerpoint presentation based on your analysis " +
-        "of the codebase. Please provide your analysis strictly in the following format. " +
-        "There should be exactly 7 slides in the presentation, and each slide should be structured as follows:\n" +
-        "1. Title Slide: Title of the presentation, Subtitle with repo name.\n" +
-        "2. Overview Slide: Brief overview of the codebase, its purpose, and main components.\n" +
-        "3-7. Detailed Slides: Each slide should cover a specific aspect of the codebase, such as architecture, " +
-        "key components, design patterns, performance considerations, and/or any notable features or practices. " +
-        "It doesnt have to be those exact things, but just create these slides in a way that they make sense. " +
-        "I will be parsing through your response to create the powerpoint so at the start of each slide part type 'slide (slide number)'\n";
+        return """
+        You are generating a PowerPoint presentation analysis of a GitHub repository.
+
+        The output will be converted into a `.pptx` file using Apache POI.
+
+        Respond with exactly 7 slides in this **strict format**:
+
+        Each slide must begin with:
+        === Slide N ===  
+        Then include the fields `Title:` and `Content:` (or `Subtitle:` for Slide 1).  
+        Follow this exact structure:
+
+        === Slide 1 ===
+        Title: [Title of the presentation]
+        Subtitle: [Subtitle with repo name]
+
+        === Slide 2 ===
+        Title: Overview
+        Content: [Brief overview of the codebase, its purpose, and main components]
+
+        === Slide 3 ===
+        Title: [Custom Title]
+        Content: [Detailed explanation of a part of the repo]
+
+        === Slide 4 ===
+        Title: [Custom Title]
+        Content: [Detailed explanation of a part of the repo]
+
+        === Slide 5 ===
+        Title: [Custom Title]
+        Content: [Detailed explanation of a part of the repo]
+
+        === Slide 6 ===
+        Title: [Custom Title]
+        Content: [Detailed explanation of a part of the repo]
+
+        === Slide 7 ===
+        Title: [Custom Title]
+        Content: [Detailed explanation of a part of the repo]
+
+        Use plain text. Do not include bullet points, markdown, or any formatting besides the structure above.
+        Make sure all slides are present. Be strict with the formatting. If you dont follow the format above I will die
+        """;
     }
 }

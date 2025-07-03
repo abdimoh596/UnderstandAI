@@ -63,12 +63,10 @@ public class OpenRouterService {
             int errorCode = error.optInt("code");
             String message = error.optString("message");
 
-            System.out.println("OpenRouter API Error " + errorCode + ": " + message);
             throw new RuntimeException("OpenRouter API Error " + errorCode + ": " + message);
         }
 
         if (!jsonResponse.has("choices")) {
-            System.out.println("Unexpected response format: " + response.body());
             throw new RuntimeException("Missing 'choices' in OpenRouter response");
         }
 

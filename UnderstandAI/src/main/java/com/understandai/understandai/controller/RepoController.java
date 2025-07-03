@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.understandai.understandai.Service.ExplanationService;
 import jakarta.servlet.http.HttpSession;
+import com.understandai.understandai.Service.PowerpointService;
 
 @RestController
 @RequestMapping("/api")
@@ -20,16 +21,18 @@ public class RepoController {
     private GitCloneService gitCloneService;
     private RepoScannerService repoScannerService;
     private ExplanationService explanationService;
+    private PowerpointService powerpointService;
 
     public RepoController(GitCloneService gitCloneService, RepoScannerService repoScannerService, 
-                          ExplanationService explanationService) {
+                          ExplanationService explanationService, PowerpointService powerpointService) {
         this.gitCloneService = gitCloneService;
         this.repoScannerService = repoScannerService;
         this.explanationService = explanationService;
+        this.powerpointService = powerpointService;
     }
 
     @PostMapping("/analyze")
-    public ResponseEntity<String> explainRepo(@RequestBody RepoRequest repoRequest, HttpSession session) throws IOException {
+    public ResponseEntity<?> explainRepo(@RequestBody RepoRequest repoRequest, HttpSession session) throws IOException {
         
         String url = repoRequest.getRepoUrl();
         if (url == null || url.isEmpty()) {
@@ -59,8 +62,15 @@ public class RepoController {
             return ResponseEntity.ok("No files found in the repository.");
         }
 
-        String explanationPrompt = explanationService.getExplanations(metadataList, repoName, level, analysisOutput);
+        String aiResponse = explanationService.getExplanations(metadataList, repoName, level, analysisOutput);
 
-        return ResponseEntity.ok(explanationPrompt);
+        if ("presentation".equalsIgnoreCase(analysisOutput)) {
+            byte[] pptxBytes = powerpointService.createPresentationFromAnalysis(aiResponse);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"repo_analysis.pptx\"")
+                    .body(pptxBytes);
+        } else {
+            return ResponseEntity.ok(aiResponse); // plain text
+        }
     }
 }

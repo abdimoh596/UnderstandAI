@@ -138,7 +138,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #ac66ea;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -157,7 +157,7 @@
             padding: 25px;
             background: #f8f9fa;
             border-radius: 15px;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #ac66ea;
         }
 
         .result h3 {
@@ -187,37 +187,6 @@
             border: 1px solid #fcc;
             border-radius: 10px;
             color: #c33;
-        }
-
-        .example-urls {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .example-urls h4 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .example-urls ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .example-urls li {
-            margin-bottom: 8px;
-            color: #666;
-        }
-
-        .example-urls a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .example-urls a:hover {
-            text-decoration: underline;
         }
 
         .user-repos {
@@ -346,9 +315,6 @@
             <h4>Your GitHub Repositories</h4>
             <p>Access and analyze your own repositories</p>
         </div>
-
-        <!-- Example Repositories Section (shown when not authenticated) -->
-        <div class="example-urls" id="exampleUrls" style="display:none;"></div>
     </div>
 
     <script>
@@ -359,7 +325,6 @@
         const resultContent = document.getElementById('resultContent');
         const error = document.getElementById('error');
         const userRepos = document.getElementById('userRepos');
-        const exampleUrls = document.getElementById('exampleUrls');
 
         // Check authentication status from Thymeleaf
         const isAuthenticated = /*[[${isAuthenticated}]]*/ false;
